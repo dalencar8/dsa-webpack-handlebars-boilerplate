@@ -4,7 +4,7 @@ Boilerplate Webpack com Handlebars
 
 ## Índice
 
-- [Diretórios da pasta `src`](#diretorios-da-pasta-src)
+- [Diretórios da pasta `src`](#diretórios-da-pasta-src)
 - [Comandos da CLI](#comandos-da-cli)
 
 ---
