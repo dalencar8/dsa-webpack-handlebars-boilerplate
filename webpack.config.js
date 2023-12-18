@@ -68,7 +68,11 @@ const htmlPluginEntries = templateFiles.map((template) => {
 module.exports = {
   entry: entriesObj,
   output: {
-    filename: 'js/[name].[chunkhash].js',
+    filename: (pathData, assetInfo) => {
+      let fn = '[name].[chunkhash]';
+      fn = fn.replace('.min', '');
+      return `js/${fn}.min.js`;
+    },
     path: environment.paths.output,
   },
   module: {
@@ -124,7 +128,11 @@ module.exports = {
   },
   plugins: [
     new MiniCssExtractPlugin({
-      filename: 'css/[name].[chunkhash].css',
+      filename: (pathData, assetInfo) => {
+        let fn = '[name].[chunkhash]';
+        fn = fn.replace('.min', '');
+        return `css/${fn}.min.css`;
+      },
     }),
     new ImageMinimizerPlugin({
       test: /\.(jpe?g|png|gif|svg)$/i,

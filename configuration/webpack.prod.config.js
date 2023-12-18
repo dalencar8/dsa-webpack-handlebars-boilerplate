@@ -17,8 +17,12 @@ module.exports = merge(webpackConfiguration, {
     minimizer: [
       new TerserPlugin({
         parallel: true,
+        minify: TerserPlugin.uglifyJsMinify,
       }),
-      new CssMinimizerPlugin(),
+      new CssMinimizerPlugin({
+        parallel: true,
+        minify: CssMinimizerPlugin.cssnanoMinify,
+      }),
     ],
   },
 
