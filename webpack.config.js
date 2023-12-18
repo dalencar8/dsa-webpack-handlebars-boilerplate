@@ -110,10 +110,15 @@ module.exports = {
         ],
       },
       {
-        test: /\.hbs$/,
+        test: /\.(handlebars|hbs)$/,
         use: [
-          'handlebars-loader',
-        ]
+          {
+            loader: 'handlebars-loader',
+            options: {
+              runtime: path.resolve(__dirname, 'handlebars.config.js'),
+            },
+          },
+        ],
       },
     ],
   },
