@@ -11,7 +11,6 @@ const HTMLWebpackPlugin = require('html-webpack-plugin');
 const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
-const { extendDefaultPlugins } = require('svgo');
 
 const environment = require('./configuration/environment');
 
@@ -45,22 +44,11 @@ const htmlPluginEntries = templateFiles.map((template) => {
 
   /* https://plmlab.math.cnrs.fr/tbrousso/imt_maquette_reunionv4/-/tree/master/node_modules/html-webpack-plugin */
   return new HTMLWebpackPlugin({
-    favicon: path.resolve(environment.paths.source, 'images', 'favicon.png'),
     inject: true,
     hash: false,
     filename: `${filename}.html`,
     chunks: chunks,
     template: path.resolve(environment.paths.source, template),
-    base: {
-      'href': '',
-      'target': '_self',
-    },
-    meta: {
-      'viewport': 'width=device-width, initial-scale=1, minimum-scale=1, shrink-to-fit=no',
-      'format-detection': 'telephone=no',
-      'msapplication-TileColor': '#222222',
-      'theme-color': '#ffffff',
-    }
   })
 }
 );
@@ -79,7 +67,7 @@ module.exports = {
     rules: [
       {
         test: /\.((c|sa|sc)ss)$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'resolve-url-loader', { loader: 'sass-loader', options: { sourceMap: true } }],
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'],
       },
       {
         test: /\.js$/,
@@ -88,30 +76,27 @@ module.exports = {
       },
       {
         test: /\.(png|gif|jpe?g|svg)$/i,
-        use: [
-          {
-            loader: 'url-loader',
-            options: {
-              name: 'images/design/[name].[hash:6].[ext]',
-              publicPath: '../',
-              limit: environment.limits.images,
-            },
+        type: 'asset',
+        parser: {
+          dataUrlCondition: {
+            maxSize: environment.limits.images,
           },
-        ],
+        },
+        generator: {
+          filename: 'images/[name].[hash:6][ext]',
+        },
       },
       {
         test: /\.(eot|ttf|woff|woff2)$/,
-        use: [
-          {
-
-            loader: 'file-loader',
-            options: {
-              name: 'fonts/[name].[hash:6].[ext]',
-              publicPath: '../',
-              limit: environment.limits.fonts,
-            },
+        type: 'asset',
+        parser: {
+          dataUrlCondition: {
+            maxSize: environment.limits.images,
           },
-        ],
+        },
+        generator: {
+          filename: 'fonts/[name].[hash:6][ext]',
+        },
       },
       {
         test: /\.(handlebars|hbs)$/,
@@ -126,35 +111,43 @@ module.exports = {
       },
     ],
   },
+  optimization: {
+    minimize: true,
+    minimizer: [
+      new ImageMinimizerPlugin({
+        minimizer: {
+          implementation: ImageMinimizerPlugin.imageminMinify,
+          options: {
+            // Lossless optimization with custom option
+            // Feel free to experiment with options for better result for you
+            plugins: [
+              ['gifsicle', { interlaced: true }],
+              ['jpegtran', { progressive: true }],
+              ['optipng', { optimizationLevel: 5 }],
+              // Svgo configuration here https://github.com/svg/svgo#configuration
+              [
+                'svgo',
+                {
+                  plugins: [
+                    {
+                      name: 'removeViewBox',
+                      active: false,
+                    },
+                  ],
+                },
+              ],
+            ],
+          },
+        },
+      }),
+    ],
+  },
   plugins: [
     new MiniCssExtractPlugin({
       filename: (pathData, assetInfo) => {
         let fn = '[name].[chunkhash]';
         fn = fn.replace('.min', '');
         return `css/${fn}.min.css`;
-      },
-    }),
-    new ImageMinimizerPlugin({
-      test: /\.(jpe?g|png|gif|svg)$/i,
-      minimizerOptions: {
-        // Lossless optimization with custom option
-        // Feel free to experiment with options for better result for you
-        plugins: [
-          ['gifsicle', { interlaced: true }],
-          ['jpegtran', { progressive: true }],
-          ['optipng', { optimizationLevel: 5 }],
-          [
-            'svgo',
-            {
-              plugins: extendDefaultPlugins([
-                {
-                  name: 'removeViewBox',
-                  active: false,
-                },
-              ]),
-            },
-          ],
-        ],
       },
     }),
     new CleanWebpackPlugin({
@@ -164,15 +157,6 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         {
-          from: path.resolve(environment.paths.source, 'images', 'content'),
-          to: path.resolve(environment.paths.output, 'images', 'content'),
-          toType: 'dir',
-          globOptions: {
-            ignore: ['*.DS_Store', 'Thumbs.db'],
-          },
-        },
-
-        {
           from: path.resolve(environment.paths.source, 'bypass'),
           to: path.resolve(environment.paths.output),
           toType: 'dir',
@@ -180,7 +164,14 @@ module.exports = {
             ignore: ['*.DS_Store', 'Thumbs.db'],
           },
         },
-
+        {
+          from: path.resolve(environment.paths.source, 'images', 'assets'),
+          to: path.resolve(environment.paths.output, 'images', 'assets'),
+          toType: 'dir',
+          globOptions: {
+            ignore: ['*.DS_Store', 'Thumbs.db'],
+          },
+        },
       ],
     }),
   ].concat(htmlPluginEntries),

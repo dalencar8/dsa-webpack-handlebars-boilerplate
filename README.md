@@ -23,8 +23,8 @@ Diretório para armazenar arquivo de fontes usada no projeto.
 
 Diretório de imagens usadas no projeto.
 
-- Arquivos fora de pastas devem ser arquivos usados por todo o projeto várias vezes, como favicon, logo, etc.
-- 📁 `content`: arquivos desta pasta devem ser imagens de conteúdos específicos.
+- Arquivos fora de pastas devem ser arquivos usados através do CSS.
+- 📁 `assets`: arquivos desta pasta devem ser imagens em tags HTML.
 
 ### 📁 `js`
 
