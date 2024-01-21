@@ -7,9 +7,7 @@
 const path = require('path');
 const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const globals = require("./globals.js");
 const HTMLWebpackPlugin = require('html-webpack-plugin');
-const jsToScss = require("./jsToScss.js")
 const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
@@ -51,7 +49,6 @@ const htmlPluginEntries = templateFiles.map((template) => {
     filename: `${filename}.html`,
     chunks: chunks,
     template: path.resolve(environment.paths.source, template),
-    templateParameters: globals,
   })
 }
 );
@@ -70,12 +67,7 @@ module.exports = {
     rules: [
       {
         test: /\.((c|sa|sc)ss)$/i,
-        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', {
-          loader: "sass-loader",
-          options: {
-            additionalData: jsToScss(globals)
-          }
-        }],
+        use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', 'sass-loader'],
       },
       {
         test: /\.js$/,
