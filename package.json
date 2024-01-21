@@ -1,7 +1,7 @@
 {
   "author": "Diego Alencar",
   "name": "dsa-webpack-handlebars-boilerplate",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Boilerplate Webpack com Handlebars",
   "homepage": "",
   "browserslist": [
