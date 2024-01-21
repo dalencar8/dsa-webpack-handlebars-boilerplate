@@ -140,3 +140,7 @@ configuration/**/*.min.js
 configuration/**/*.min.js.map
 src/js/**/*.min.js
 src/js/**/*.min.js.map
+globals.min.js
+globals.min.js.map
+jsToScss.min.js
+jsToScss.min.js.map
