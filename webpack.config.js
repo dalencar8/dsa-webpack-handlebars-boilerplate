@@ -16,42 +16,88 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const environment = require('./configuration/environment');
 
-const templateFiles = fs.readdirSync(environment.paths.source)
-  .filter((file) => path.extname(file).toLowerCase() === '.hbs');
+function getTemplateFiles(folderPaths) {
+  //get files from an array of folder paths, including subfolders
 
+  const filesList = [];
+
+  if (folderPaths.length === 0) return
+
+  let checkFolderPath = fp => {
+    fp.forEach(folderPath => {
+      const results = fs.readdirSync(folderPath);
+      const files = results.filter(res => fs.lstatSync(path.resolve(folderPath, res)).isFile() && path.extname(res).toLowerCase() === '.hbs');
+
+      if (files.length) {
+        //if has files, get files with path included and push them to "filesList"
+        const filePaths = files.map(file => path.resolve(folderPath, file));
+
+        filePaths.forEach(file => {
+          filesList.push(file);
+        });
+      }
+
+      //check if folder has folders inside, and if so, recursively get files from these folders
+      const folders = results.filter(res => fs.lstatSync(path.resolve(folderPath, res)).isDirectory());
+      const innerFolderPaths = folders.map(folder => path.resolve(folderPath, folder));
+
+      if (innerFolderPaths.length === 0) return
+
+      checkFolderPath(innerFolderPaths);
+    })
+  }
+
+  checkFolderPath(folderPaths);
+
+  return filesList;
+}
+const templateFiles = getTemplateFiles([path.resolve(environment.paths.source, 'pages')]);
+
+//read "js" folder and get JS files
 const entryFiles = fs.readdirSync(
   path.resolve(environment.paths.source, "js")
 ).filter((file) => path.extname(file).toLowerCase() === '.js');
 
-const entriesObj = {
+//object with files paths for use in HTMLWebpackPlugin chunks
+let entriesObj = {
   "style": path.resolve(environment.paths.source, 'scss', 'app.scss')
 }
 
+//add JS files paths in "entriesObj"
 entryFiles.forEach(f => {
   entriesObj[path.parse(f).name] = path.resolve(environment.paths.source, 'js', f)
 });
 
 const htmlPluginEntries = templateFiles.map((template) => {
-  const filename = path.parse(template).name
+  const filename = path.parse(template).name;
+  const getdir = path.parse(template).dir;
+  const getfolder = getdir.split('\\')[getdir.split('\\').length - 1];
+  const folder = getfolder == 'pages' ? '' : getfolder;
+
   const chunks = [];
+  //insert common.js in any html
   if (filename !== "common" && entriesObj.hasOwnProperty("common")) {
     chunks.push("common");
   }
-
+  //if folder is not 'pages', which means it's a subfolder, insert [folder]-dir.js in the html
+  if (getfolder !== 'pages') {
+    chunks.push(folder + '-dir');
+  }
+  //insert [filename].js in the html
   if (entriesObj.hasOwnProperty(filename)) {
     chunks.push(filename);
   }
-
-  chunks.push("style")
+  //insert app.scss in any html
+  chunks.push("style");
 
   /* https://plmlab.math.cnrs.fr/tbrousso/imt_maquette_reunionv4/-/tree/master/node_modules/html-webpack-plugin */
   return new HTMLWebpackPlugin({
     inject: true,
     hash: false,
-    filename: `${filename}.html`,
+    filename: `${(folder !== '' ? folder + '/' : '') + filename}.html`,
     chunks: chunks,
     template: path.resolve(environment.paths.source, template),
-    templateParameters: globals,
+    templateParameters: globals, //add global variables
   })
 }
 );
@@ -73,7 +119,7 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, 'css-loader', 'postcss-loader', {
           loader: "sass-loader",
           options: {
-            additionalData: jsToScss(globals)
+            additionalData: jsToScss(globals) //add global variables
           }
         }],
       },

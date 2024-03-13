@@ -6,6 +6,7 @@ Boilerplate Webpack com Handlebars
 
 - [Diretórios da pasta `src`](#diretórios-da-pasta-src)
 - [Comandos da CLI](#comandos-da-cli)
+- [Globals.js](#globalsjs)
 
 ---
 
@@ -32,11 +33,18 @@ Diretório de arquivos javascript usados no projeto.
 
 - Arquivos fora de pastas são os arquivos usados nos htmls finais, sendo que o nome dele deve ser igual ao do html para ser inserido lá. Por exemplo: `index.js` será usado somente em `index.html`.
 - O arquivo `common.js` é o único que é usado em todos os htmls.
+- Se existem páginas em subpastas dentro da pasta `pages`, estas páginas usarão arquivos `[nome da subpasta]-dir.js`. Por exemplo: `works-dir.js` será usando somente nos `works/*.html`.
 - 📁 `includes`: deixe aqui javascripts de bibliotecas de terceiros, que não devem ser editados.
+
+NOTA: Importe os arquivos SCSS que quiser dentro dos JS (menos os da pasta `includes`) para que estes sejam usados somente nos HTMLs em que estes JS são chamados.
+
+### 📁 `pages`
+
+Diretório de arquivos Handlebar que são páginas. Mantém subpastas quando os htmls são construídos no diretório `dist`.
 
 ### 📁 `partials`
 
-Diretório de arquivos Handlebar que são Partials, templates que podem ser reaproveitados por outros templates.
+Diretório de arquivos Handlebar que são Partials, templates que podem ser reaproveitados por páginas e outros templates.
 
 Mais informações [aqui](https://handlebarsjs.com/guide/partials.html).
 
@@ -86,3 +94,39 @@ Diretório de arquivos SASS usados no projeto.
 ### 👉 `npm run stats`
 
 - Use para gerar arquivo `dist/stats.json` com informações do projeto.
+
+## Globals.js
+
+Use o arquivo `globals.js` para poder compartilhar variáveis entre os arquivos HTML, JS e SCSS.
+
+### Exemplo
+
+```javascript
+module.exports = {
+  titulo: "Olá mundo!",
+  corprincipal: "#10b981",
+};
+```
+
+Então, em HTMLs, use varáveis `<%= %>`:
+
+```html
+<h1><%= titulo %></h1>
+```
+
+Em Javascripts (no caso em `src/js/common.js`), será retornado um objeto:
+
+```javascript
+import globals from "../../globals.js";
+
+document.write(globals.titulo);
+document.write(globals.corprincipal);
+```
+
+Em SCSS, com o auxílio do `jsToScss.js`, use as variáveis SCSS:
+
+```scss
+h1 {
+  color: $corprincipal;
+}
+```
