@@ -1,6 +1,6 @@
 # dsa-webpack-handlebars-boilerplate
 
-Boilerplate Webpack com Handlebars
+Boilerplate Webpack com Handlebars, inspirado no [template Webpack de projeto da Athlon](https://github.com/WeAreAthlon/frontend-webpack-boilerplate).
 
 ## Índice
 
