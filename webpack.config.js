@@ -9,6 +9,7 @@ const fs = require('fs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const globals = require("./globals.js");
 const HTMLWebpackPlugin = require("html-webpack-plugin");
+const HtmlWebpackInjectPreload = require('@principalstudio/html-webpack-inject-preload');
 const jsToScss = require("./jsToScss.js");
 const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
@@ -159,6 +160,9 @@ module.exports = {
             loader: 'handlebars-loader',
             options: {
               runtime: path.resolve(__dirname, 'handlebars.config.js'),
+              precompileOptions: {
+                knownHelpersOnly: false,
+              },
             },
           },
         ],
@@ -227,6 +231,19 @@ module.exports = {
           },
         },
       ],
+    }),
+    /*
+    use o plugin abaixo para pré-carregar arquivos usando tags <link rel="preload">
+    usando regex para identificar os arquivos e atribuindo atributos a ele
+    https://github.com/principalstudio/html-webpack-inject-preload
+    */
+    new HtmlWebpackInjectPreload({
+      files: [
+        {
+          match: /\.(png|gif|jpe?g|svg)$/i,
+          attributes: { as: 'image' },
+        }
+      ]
     }),
   ].concat(htmlPluginEntries),
   target: 'web',
